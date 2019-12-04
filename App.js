@@ -1,13 +1,15 @@
-import React, { Component } from 'react';
-import { StyleSheet, Text, View, Button, TextInput } from 'react-native';
+import React from 'react';
+import { Provider } from 'react-redux';
+import store from './src/redux/store';
+import SearchBar from './src/components/SearchBar';
 
-import SearchBar from './components/SearchBar';
-
-export default class App extends Component {
-
+class App extends React.Component {
   render() {
     return (
-      <SearchBar />
-    )
+      <Provider store={store}>
+        <SearchBar />
+      </Provider>
+    );
   }
 }
+export default App;
