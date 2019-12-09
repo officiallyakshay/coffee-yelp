@@ -1,8 +1,6 @@
 import React from 'react';
 import { Provider } from 'react-redux';
-import MapView from 'react-native-maps';
 import store from './src/redux/store';
-import SearchBar from './src/components/SearchBar';
 import Map from './src/components/Map';
 import { Header } from 'react-native-elements';
 import { View, ImageBackground } from 'react-native';
@@ -24,3 +22,4 @@ class App extends React.Component {
   }
 }
 export default App;
+

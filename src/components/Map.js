@@ -1,27 +1,28 @@
 import React from 'react';
 import MapView from 'react-native-maps';
-import { processColor } from 'react-native';
+import { Linking, Alert } from 'react-native';
 import axios from 'axios';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
-const yelpApiKey = process.env.YELP_API_KEY;
+const yelpAPI = process.env.YELP_API;
 
 export default class Map extends React.Component {
-  constructor(){
+  constructor() {
     super();
 
     this.state = {
       isLoading: true,
+      markers: [],
       origin: { latitude: 35.294401000, longitude: -120.670121000 },
-      markers: []
     };
 
     config = {
       headers: {
-        Authorization: `Bearer ${yelpApiKey}`
+        Authorization: `Bearer ${yelpAPI}`,
       },
       params: {
         term: 'Coffee',
-        radius: 1,
+        raduis: 1,
         latitude: this.state.origin.latitude,
         longitude: this.state.origin.longitude,
         sort_by: 'distance',
@@ -30,16 +31,45 @@ export default class Map extends React.Component {
     };
   }
 
+  getLocation = () => {
+    return new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(
+        position => {
+          let newOrigin = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          };
+          config.params.latitude = newOrigin.latitude;
+          config.params.longitude = newOrigin.longitude;
+
+          this.setState({
+            origin: newOrigin,
+          });
+          resolve(true);
+        },
+        err => {
+          console.log('error');
+          console.log(err);
+          reject(reject);
+        },
+        { enableHighAccuracy: true, timeout: 2000, maximumAge: 1000 }
+      );
+    });
+  };
+
   async componentDidMount() {
+    await this.getLocation();
     await this.fetchMarkerData();
   }
 
   fetchMarkerData() {
-    return axios.get(`https://api.yelp.com/v3/businesses/search?term=${config.params.term}&latitude=${config.params.latitude}&longitude=${config.params.longitude}`)
-      .then(response => {
+    // changing to this api because the other one did not work
+    return axios
+      .get(`https://api.yelp.com/v3/businesses/search`, config)
+      .then(responseJson => {
         this.setState({
           isLoading: false,
-          markers: response.data.businesses.map(x => x),
+          markers: responseJson.data.businesses.map(x => x),
         });
       })
       .catch(error => {
@@ -47,26 +77,8 @@ export default class Map extends React.Component {
       });
   }
 
-  // render(){
-  //   return(
-  //     <MapView
-  //       style={{ flex: 1 }}
-  //       provider="google"
-  //       region={{
-  //         latitude: this.state.origin.latitude,
-  //         longitude: this.state.origin.longitude,
-  //         latitudeDelta: 0.0100,
-  //         longitudeDelta: 0.0100,
-  //       }}
-  //     >
-
-  //       <MapView.Marker coordinate={this.state.origin}/>
-  //     </MapView>
-  //   );
-  // }
 
   render() {
-    console.log('markers: ', this.state.markers);
     return (
       <MapView
         style={{ flex: 1 }}
@@ -87,7 +99,7 @@ export default class Map extends React.Component {
               };
               const url = marker.url;
 
-              const nameOfMarker = `${marker.name}`;
+              const nameOfMarker = `${marker.name}(${marker.rating} rating)`;
               const addressOfMarker = `${marker.location.address1}, ${marker.location.city}`;
               return (
                 <MapView.Marker
@@ -95,15 +107,33 @@ export default class Map extends React.Component {
                   coordinate={coords}
                   title={nameOfMarker}
                   description={addressOfMarker}
+                  onPress={() =>
+                    Alert.alert(
+                      'Redirect to yelp?',
+                      'or cancel to wing it ;) ',
+                      [
+                        {
+                          text: 'Cancel',
+                          onPress: () => console.log('Cancel Pressed'),
+                          style: 'cancel',
+                        },
+                        { text: 'OK', onPress: () => Linking.openURL(url) },
+                      ],
+                      { cancelable: false }
+                    )}
                 >
+
+                  <Icon name="map-marker" size={30} color={'#ff0000'} />
 
                 </MapView.Marker>
               );
             })}
 
         <MapView.Marker coordinate={this.state.origin}>
+          <Icon name="street-view" size={40} color={'#76BBB7'} />
         </MapView.Marker>
       </MapView>
     );
   }
 }
+
