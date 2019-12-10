@@ -17,7 +17,7 @@ export default class Map extends React.Component {
 
     config = {
       headers: {
-        Authorization: `Bearer ocpJnYtP2Hn27Vh5JsqPQdADhObneTs-66I5PnH9GfDPAkts8XCClBd-ikbn3e1Y2ZpW4IUM1ixZfHvKdCb-KhOj8z88hBiB8XXsnpQ3AS0QEcVfUZX9wsJO7i_nXXYx`,
+        Authorization: `Bearer API goes here`,
       },
       params: {
         term: 'Coffee',
